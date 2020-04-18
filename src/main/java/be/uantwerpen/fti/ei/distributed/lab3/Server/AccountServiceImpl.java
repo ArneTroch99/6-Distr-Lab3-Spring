@@ -29,7 +29,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized boolean store(Account account) {
+    public boolean store(Account account) {
         try {
             Stream<Path> walk = Files.walk(Paths.get(accountDir));
             if (walk.map(x -> x.toString()).filter(f -> f.contains(account.getName() + extension)).collect(Collectors.toList()).size() == 0) {
@@ -45,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized List<Account> getAll() {
+    public List<Account> getAll() {
         try (Stream<Path> walk = Files.walk(Paths.get(accountDir))) {
             List<String> results = walk.filter(Files::isRegularFile).map(x -> x.toString()).collect(Collectors.toList());
             List<Account> accounts = new ArrayList<>();
@@ -60,7 +60,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized Account getAccountByName(String accountName) {
+    public Account getAccountByName(String accountName) {
         try (Stream<Path> walk = Files.walk(Paths.get(accountDir))) {
             List<String> file = walk.map(x -> x.toString())
                     .filter(f -> f.contains(accountName + extension))
@@ -108,7 +108,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized boolean changeParam(String accountName, String param, String newParam) {
+    public boolean changeParam(String accountName, String param, String newParam) {
         try (Stream<Path> walk = Files.walk(Paths.get(accountDir))) {
             List<String> file = walk.map(x -> x.toString())
                     .filter(f -> f.contains(accountName + extension))
@@ -171,7 +171,12 @@ public class AccountServiceImpl implements AccountService {
 
     private synchronized void overwriteAccount(Account account) {
         try {
-            mapper.writeValue(new File(accountDir, account.getName() + extension), account);
+            File temp = new File(accountDir, account.getName() + extension);
+            while (SynchronizedFileList.fileQueue.contains(temp)){
+            }
+            SynchronizedFileList.addToList(temp);
+            mapper.writeValue(temp, account);
+            SynchronizedFileList.removeFromList(temp);
         } catch (IOException e) {
             e.printStackTrace();
         }

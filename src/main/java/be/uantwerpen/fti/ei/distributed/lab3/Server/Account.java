@@ -1,7 +1,5 @@
 package be.uantwerpen.fti.ei.distributed.lab3.Server;
 
-import javax.validation.Constraint;
-
 public class Account {
 
     private String name;

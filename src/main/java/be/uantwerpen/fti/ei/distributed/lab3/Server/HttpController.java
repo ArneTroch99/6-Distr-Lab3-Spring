@@ -54,7 +54,6 @@ public class HttpController {
     public ResponseEntity changeAccount(@RequestParam("account") String accountName,
                                         @RequestParam("param") String param,
                                         @RequestParam("newValue") String newValue){
-        System.out.println(newValue);
         if (accountService.changeParam(accountName, param, newValue)){
             return new ResponseEntity(HttpStatus.OK);
         } else {

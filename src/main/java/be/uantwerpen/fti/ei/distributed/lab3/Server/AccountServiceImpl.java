@@ -34,6 +34,7 @@ public class AccountServiceImpl implements AccountService {
             Stream<Path> walk = Files.walk(Paths.get(accountDir));
             if (walk.map(x -> x.toString()).filter(f -> f.contains(account.getName() + extension)).collect(Collectors.toList()).size() == 0) {
                 mapper.writeValue(new File(accountDir, account.getName() + extension), account);
+                System.out.println("Created account: " + account.toString());
                 return true;
             } else {
                 return false;
@@ -149,12 +150,16 @@ public class AccountServiceImpl implements AccountService {
             if (file.size() == 1) {
                 Account account = mapper.readValue(new File(file.get(0)), Account.class);
                 if (type.equals("plus")){
+                    int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() + Integer.parseInt(amount));
                     overwriteAccount(account);
+                    System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
                     return true;
                 } else if (type.equals("min")){
+                    int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() - Integer.parseInt(amount));
                     overwriteAccount(account);
+                    System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
                     return true;
 
                 } else {

@@ -42,7 +42,6 @@ public class HttpController {
                                          @RequestParam(value = "children", defaultValue = "0") int children,
                                          @RequestParam(value = "partner", defaultValue = "") String partner) {
         Account account = new Account(name, balance, address, children, partner);
-        System.out.println(account.toString());
         if (accountService.store(account)) {
             return new ResponseEntity(HttpStatus.OK);
         } else {

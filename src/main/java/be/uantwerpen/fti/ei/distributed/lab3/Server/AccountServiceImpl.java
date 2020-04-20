@@ -148,18 +148,23 @@ public class AccountServiceImpl implements AccountService {
                     .filter(f -> f.contains(accountName + extension))
                     .collect(Collectors.toList());
             if (file.size() == 1) {
+                while (SynchronizedFileList.fileQueue.contains(file.get(0))){
+                }
+                SynchronizedFileList.addToList(file.get(0));
                 Account account = mapper.readValue(new File(file.get(0)), Account.class);
                 if (type.equals("plus")){
                     int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() + Integer.parseInt(amount));
                     overwriteAccount(account);
                     System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
+                    SynchronizedFileList.removeFromList(file.get(0));
                     return true;
                 } else if (type.equals("min")){
                     int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() - Integer.parseInt(amount));
                     overwriteAccount(account);
                     System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
+                    SynchronizedFileList.removeFromList(file.get(0));
                     return true;
 
                 } else {

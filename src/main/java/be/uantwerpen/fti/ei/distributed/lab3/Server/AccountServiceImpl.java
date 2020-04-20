@@ -115,21 +115,29 @@ public class AccountServiceImpl implements AccountService {
                     .filter(f -> f.contains(accountName + extension))
                     .collect(Collectors.toList());
             if (file.size() == 1) {
-                Account account = mapper.readValue(new File(file.get(0)), Account.class);
+                while (SynchronizedFileList.fileQueue.contains(file.get(0))){
+                }
+                SynchronizedFileList.addToList(file.get(0));
+                File fullFile = new File(file.get(0));
+                Account account = mapper.readValue(fullFile, Account.class);
                 switch (param) {
                     case "address":
                         account.setAddress(newParam);
-                        overwriteAccount(account);
+                        mapper.writeValue(fullFile, account);
+                        SynchronizedFileList.removeFromList(file.get(0));
                         return true;
                     case "children":
                         account.setChildren(Integer.parseInt(newParam));
-                        overwriteAccount(account);
+                        mapper.writeValue(fullFile, account);
+                        SynchronizedFileList.removeFromList(file.get(0));
                         return true;
                     case "partner":
                         account.setPartner(newParam);
-                        overwriteAccount(account);
+                        mapper.writeValue(fullFile, account);
+                        SynchronizedFileList.removeFromList(file.get(0));
                         return true;
                     default:
+                        SynchronizedFileList.removeFromList(file.get(0));
                         return false;
                 }
             } else {
@@ -142,7 +150,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public synchronized boolean changeBalance(String accountName, String type, String amount) {
+    public boolean changeBalance(String accountName, String type, String amount) {
         try (Stream<Path> walk = Files.walk(Paths.get(accountDir))) {
             List<String> file = walk.map(x -> x.toString())
                     .filter(f -> f.contains(accountName + extension))
@@ -151,23 +159,25 @@ public class AccountServiceImpl implements AccountService {
                 while (SynchronizedFileList.fileQueue.contains(file.get(0))){
                 }
                 SynchronizedFileList.addToList(file.get(0));
-                Account account = mapper.readValue(new File(file.get(0)), Account.class);
+                File fullFile = new File(file.get(0));
+                Account account = mapper.readValue(fullFile, Account.class);
                 if (type.equals("plus")){
                     int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() + Integer.parseInt(amount));
-                    overwriteAccount(account);
+                    mapper.writeValue(fullFile, account);
                     System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
                     SynchronizedFileList.removeFromList(file.get(0));
                     return true;
                 } else if (type.equals("min")){
                     int prevBalance = account.getBalance();
                     account.setBalance(account.getBalance() - Integer.parseInt(amount));
-                    overwriteAccount(account);
+                    mapper.writeValue(fullFile, account);
                     System.out.println("Balance of account " + account.getName() + " changed from " + prevBalance + " to " + account.getBalance());
                     SynchronizedFileList.removeFromList(file.get(0));
                     return true;
 
                 } else {
+                    SynchronizedFileList.removeFromList(file.get(0));
                     return false;
                 }
             } else {
@@ -177,19 +187,5 @@ public class AccountServiceImpl implements AccountService {
             e.printStackTrace();
             return false;
         }
-    }
-
-    private synchronized void overwriteAccount(Account account) {
-        try {
-            while (SynchronizedFileList.fileQueue.contains(account + ".json")){
-            }
-            File temp = new File(accountDir, account.getName() + extension);
-            SynchronizedFileList.addToList(temp.getName());
-            mapper.writeValue(temp, account);
-            SynchronizedFileList.removeFromList(temp.getName());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 }

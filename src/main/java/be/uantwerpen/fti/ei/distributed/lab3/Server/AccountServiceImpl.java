@@ -176,12 +176,12 @@ public class AccountServiceImpl implements AccountService {
 
     private synchronized void overwriteAccount(Account account) {
         try {
-            File temp = new File(accountDir, account.getName() + extension);
-            while (SynchronizedFileList.fileQueue.contains(temp)){
+            while (SynchronizedFileList.fileQueue.contains(account + ".json")){
             }
-            SynchronizedFileList.addToList(temp);
+            File temp = new File(accountDir, account.getName() + extension);
+            SynchronizedFileList.addToList(temp.getName());
             mapper.writeValue(temp, account);
-            SynchronizedFileList.removeFromList(temp);
+            SynchronizedFileList.removeFromList(temp.getName());
         } catch (IOException e) {
             e.printStackTrace();
         }

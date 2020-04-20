@@ -6,13 +6,13 @@ import java.util.List;
 
 public class SynchronizedFileList {
 
-    public static List<File> fileQueue = new ArrayList<>();
+    public static List<String> fileQueue = new ArrayList<>();
 
-    public static synchronized void addToList(File file){
+    public static synchronized void addToList(String file){
         fileQueue.add(file);
     }
 
-    public static synchronized void removeFromList(File file){
+    public static synchronized void removeFromList(String file){
         fileQueue.remove(file);
     }
 
